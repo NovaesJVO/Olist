@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """
 Carrega CSVs de dados_ajustados/ nas tabelas bronze do PostgreSQL.
-Usa COPY para bulk insert eficiente. Idempotente via TRUNCATE antes de cada carga.
+Estratégia: TRUNCATE + COPY (idempotente).
+Metadados _extracted_at e _source adicionados automaticamente por linha.
 """
 
-import sys
+import csv
+import os
+from datetime import datetime, timezone
 from pathlib import Path
+
 import psycopg
 
 CSV_TO_TABLE = {
@@ -17,8 +21,10 @@ CSV_TO_TABLE = {
 }
 
 
-def load_all(csv_dir: str, conn_str: str) -> None:
-    csv_path = Path(csv_dir)
+def load_all(shifted_dir: str, conn_str: str) -> None:
+    csv_path = Path(shifted_dir)
+    extracted_at = datetime.now(timezone.utc)
+
     with psycopg.connect(conn_str) as conn:
         for filename, table in CSV_TO_TABLE.items():
             filepath = csv_path / filename
@@ -28,12 +34,14 @@ def load_all(csv_dir: str, conn_str: str) -> None:
 
             with conn.cursor() as cur:
                 cur.execute(f"TRUNCATE {table}")
-                with cur.copy(
-                    f"COPY {table} FROM STDIN WITH (FORMAT CSV, HEADER true, NULL '')"
-                ) as copy:
-                    with open(filepath, "r", encoding="utf-8") as f:
-                        while chunk := f.read(65536):
-                            copy.write(chunk)
+                with cur.copy(f"COPY {table} FROM STDIN") as copy:
+                    with open(filepath, newline="", encoding="utf-8") as f:
+                        reader = csv.reader(f)
+                        next(reader)  # skip header
+                        for row in reader:
+                            normalized = [v if v != "" else None for v in row]
+                            normalized.extend([extracted_at, filename])
+                            copy.write_row(normalized)
 
             conn.commit()
             rows = conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
@@ -42,10 +50,9 @@ def load_all(csv_dir: str, conn_str: str) -> None:
 
 if __name__ == "__main__":
     import argparse
-    import os
 
     parser = argparse.ArgumentParser(description="Carga CSV → bronze (PostgreSQL)")
-    parser.add_argument("--csv-dir", default="./dados_ajustados")
+    parser.add_argument("--shifted-dir", default="./dados_ajustados")
     args = parser.parse_args()
 
     conn_str = (
@@ -56,4 +63,4 @@ if __name__ == "__main__":
         f"password={os.getenv('PG_PASSWORD', 'postgres')}"
     )
 
-    load_all(args.csv_dir, conn_str)
+    load_all(args.shifted_dir, conn_str)
