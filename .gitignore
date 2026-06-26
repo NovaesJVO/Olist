@@ -37,6 +37,7 @@ dados_originais/
 dados_ajustados/
 archive.zip
 
-# dbt credentials (não versionar)
+# dbt credentials e estado local (não versionar)
 dbt_olist/profiles.yml
+dbt_olist/.user.yml
 
