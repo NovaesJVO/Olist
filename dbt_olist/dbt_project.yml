@@ -12,3 +12,5 @@ models:
     +materialized: view
     staging:
       +schema: silver
+    intermediate:
+      +schema: silver
