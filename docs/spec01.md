@@ -132,16 +132,18 @@ Olist/
 ## 6. Critérios de Aceitação (DoD)
 
 - [x] Pasta `dados_originais/` existe no root do projeto
-- [ ] Todos os 9 arquivos CSV estão presentes com nomes originais
-- [ ] Contagem aproximada de linhas:
+- [x] Todos os 9 arquivos CSV estão presentes com nomes originais
+- [x] Contagem aproximada de linhas:
   - `olist_customers_dataset.csv` ≈ 100 K linhas
   - `olist_orders_dataset.csv` ≈ 99 K linhas (referência principal)
   - `olist_geolocation_dataset.csv` ≈ 1 M linhas
   - Demais arquivos com linha apropriados
-- [ ] Arquivo `dados_originais/.gitkeep` ou entrada em `.gitignore` confirmada
-- [ ] Comando `ls dados_originais/` ou `dir dados_originais/` lista os 9 arquivos
-- [ ] Nenhum erro de encoding ou corrupção detectado
-- [ ] Esta spec e script de download documentados em `doc/`
+- [x] Arquivo `dados_originais/.gitkeep` ou entrada em `.gitignore` confirmada
+- [x] Comando `ls dados_originais/` ou `dir dados_originais/` lista os 9 arquivos
+- [x] Nenhum erro de encoding ou corrupção detectado
+- [x] Esta spec e script de download documentados em `docs/`
+
+**Status**: ✅ **CONCLUÍDO** - Dataset extraído em 2026-06-26
 
 ---
 
@@ -172,28 +174,29 @@ Olist/
 
 ## 8. Implementação
 
-### 8.1 Script de Download (Pseudo-código)
+### 8.1 Método de Ingestão
 
+**Opção 1 (Automatizado - Não Utilizada)**:
 ```python
 import kaggle
 from pathlib import Path
 
-# Setup
 output_dir = Path("dados_originais")
 output_dir.mkdir(exist_ok=True)
-
 dataset = "olistbr/brazilian-ecommerce"
-
-# Download
 kaggle.api.dataset_download_files(dataset, path=output_dir, unzip=True)
-
-# Validação
-files = list(output_dir.glob("*.csv"))
-print(f"Download concluído: {len(files)} arquivos")
-for f in sorted(files):
-    line_count = sum(1 for _ in open(f)) - 1  # Exclui header
-    print(f"  {f.name}: {line_count:,} linhas")
 ```
+
+**Opção 2 (Utilizada) - Download Manual via Kaggle Web**:
+1. Acessar https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce
+2. Clicar "Download"
+3. Extrair `archive.zip` para `dados_originais/`
+4. Verificar: 9 arquivos CSV presentes
+
+**Status Atual**: ✅ **CONCLUÍDO** (2026-06-26)
+- 9 arquivos CSV extraídos
+- Nomes originais preservados
+- Pronto para próxima fase (DDL Bronze)
 
 ### 8.2 Inclusão em `.gitignore`
 

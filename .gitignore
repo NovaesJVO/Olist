@@ -31,3 +31,6 @@ logs/
 # Database
 *.db
 *.sqlite
+
+# Data
+dados_originais/

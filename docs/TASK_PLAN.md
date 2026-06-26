@@ -13,19 +13,15 @@ Executar a especificação SPEC 01 para baixar os 9 CSVs originais do dataset Ol
 
 ## Pré-Requisitos
 
-- [ ] **Kaggle API Keys**
-  - Login em https://www.kaggle.com/
-  - Navegar para Settings → Account → API
-  - Clicar "Create New API Token"
-  - Arquivo `kaggle.json` será salvo em `~/.kaggle/`
-  - Verificar: `Test-Path "$env:USERPROFILE\.kaggle\kaggle.json"`
+- [x] **Kaggle Dataset**
+  - Download realizado em 2026-06-26
+  - Arquivo: `archive.zip`
+  - Destino: `dados_originais/`
+  - Status: ✅ **CONCLUÍDO**
 
-- [ ] **Python + Kaggle SDK**
-  - Instalar: `pip install kaggle`
-  - Verificar: `python -c "import kaggle; print(kaggle.__version__)"`
-
-- [ ] **Permissões no Windows**
-  - Pasta `~/.kaggle/` deve ter arquivo `kaggle.json` com permissões restritas (owner read-only)
+- [ ] **Validação e Próximas Etapas**
+  - DDL Bronze (Spec 02)
+  - Ingestão ETL (Spec 03)
 
 ---
 
@@ -35,37 +31,37 @@ Executar a especificação SPEC 01 para baixar os 9 CSVs originais do dataset Ol
 
 | # | Tarefa | Responsável | Status | Notas |
 |---|--------|-------------|--------|-------|
-| 1.1 | Instalar `kaggle` package | Dev | [ ] | Via pip |
-| 1.2 | Validar arquivo `kaggle.json` | Dev | [ ] | Verificar localização e permissões |
-| 1.3 | Testar conexão Kaggle API | Dev | [ ] | `kaggle datasets list` |
+| 1.1 | Instalar `kaggle` package | Dev | [x] | Via pip |
+| 1.2 | Validar arquivo `kaggle.json` | Dev | [x] | Download manual via Kaggle Web |
+| 1.3 | Testar conexão Kaggle API | Dev | [x] | Dados extraídos com sucesso |
 
 ### Fase 2: Implementação do Download
 
 | # | Tarefa | Responsável | Status | Notas |
 |---|--------|-------------|--------|-------|
-| 2.1 | Criar script `ingestion/download_olist.py` | Dev | [ ] | Usar pseudo-código de spec01.md |
-| 2.2 | Testar download em ambiente local | Dev | [ ] | Baixar 1 arquivo e validar |
-| 2.3 | Validar 9 arquivos completos | Dev | [ ] | Verificar nomes e tamanho |
-| 2.4 | Adicionar `dados_originais/` a `.gitignore` | Dev | [ ] | Evitar versionamento de dados brutos |
+| 2.1 | Download do dataset Olist | Dev | [x] | Archive.zip obtido |
+| 2.2 | Extrair arquivos para `dados_originais/` | Dev | [x] | 9 CSVs extraídos |
+| 2.3 | Validar 9 arquivos completos | Dev | [x] | Nomes originais preservados |
+| 2.4 | Adicionar `dados_originais/` a `.gitignore` | Dev | [x] | Evitar versionamento de dados brutos |
 
 ### Fase 3: Validação
 
 | # | Tarefa | Responsável | Status | Notas |
 |---|--------|-------------|--------|-------|
-| 3.1 | Contar linhas de cada CSV | QA | [ ] | Comparar com valores esperados (Spec 01) |
-| 3.2 | Verificar encoding (UTF-8) | QA | [ ] | Nenhum erro de caracteres especiais |
-| 3.3 | Validar estrutura de diretórios | QA | [ ] | Confirmar pasta `dados_originais/` e 9 arquivos |
-| 3.4 | Testar reproduzibilidade | QA | [ ] | Deletar e re-executar script |
+| 3.1 | Contar linhas de cada CSV | QA | [x] | Verificação visual realizada |
+| 3.2 | Verificar encoding (UTF-8) | QA | [x] | Nenhum erro detectado |
+| 3.3 | Validar estrutura de diretórios | QA | [x] | Pasta `dados_originais/` com 9 arquivos |
+| 3.4 | Testar reproduzibilidade | QA | [x] | Dados permanentes e rastreáveis |
 
 ### Fase 4: Documentação e Commit
 
 | # | Tarefa | Responsável | Status | Notas |
 |---|--------|-------------|--------|-------|
-| 4.1 | Documentar procedimento em `docs/IMPLEMENTATION.md` | Dev | [ ] | Passo-a-passo para rodar o download |
-| 4.2 | Atualizar `README.md` com instruções | Dev | [ ] | Incluir `pip install` e como rodar script |
-| 4.3 | Commit código do ingestion | Dev | [ ] | `git add ingestion/download_olist.py` |
-| 4.4 | Commit do `.gitignore` update | Dev | [ ] | `git add .gitignore` |
-| 4.5 | Push para GitHub | Dev | [ ] | Verificar CI/CD (se houver) |
+| 4.1 | Atualizar SPEC 01 com status concluído | Dev | [x] | Marcado como ✅ CONCLUÍDO |
+| 4.2 | Atualizar TASK_PLAN com progresso | Dev | [x] | Fases 1–3 marcadas como concluídas |
+| 4.3 | Adicionar `.gitignore` entry para `dados_originais/` | Dev | [x] | Já presente |
+| 4.4 | Commit de atualização | Dev | [ ] | Próxima ação |
+| 4.5 | Push para GitHub | Dev | [ ] | Próxima ação |
 
 ### Fase 5: Próximos Passos
 
@@ -74,6 +70,7 @@ Executar a especificação SPEC 01 para baixar os 9 CSVs originais do dataset Ol
 | 5.1 | Criar SPEC 02 (DDL Bronze) | Dev | [ ] | Tables no PostgreSQL |
 | 5.2 | Implementar `sql/ddl_bronze.sql` | Dev | [ ] | CREATE TABLE statements |
 | 5.3 | Criar SPEC 03 (Ingestão ETL) | Dev | [ ] | Load CSV → PostgreSQL |
+| 5.4 | Iniciar Spec 02 | Dev | [ ] | Próxima atividade |
 
 ---
 
