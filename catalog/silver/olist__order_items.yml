@@ -1,0 +1,48 @@
+name: olist__order_items
+layer: silver
+domain: olist
+description: >
+  Itens individuais dentro de cada pedido. Grão = item (order_id + order_item_id).
+  Um pedido pode ter múltiplos itens de diferentes sellers.
+owner: Novaes
+lineage:
+  sources:
+    - bronze.olist__order_items
+  depends_on:
+    - ref('olist__order_items')
+
+columns:
+  - name: order_id
+    type: TEXT
+    description: FK para olist__orders.
+    tests: [not_null]
+
+  - name: order_item_id
+    type: INTEGER
+    description: Sequencial do item dentro do pedido (1, 2, 3...).
+    tests: [not_null]
+
+  - name: product_id
+    type: TEXT
+    description: Identificador do produto.
+    tests: [not_null]
+
+  - name: seller_id
+    type: TEXT
+    description: FK para olist__sellers. Vendedor responsável por este item.
+    tests: [not_null]
+
+  - name: shipping_limit_at
+    type: TIMESTAMPTZ
+    description: Prazo máximo para o seller postar o item na transportadora.
+    tests: [not_null]
+
+  - name: price
+    type: NUMERIC(12,2)
+    description: Preço unitário do produto (sem frete).
+    tests: [not_null]
+
+  - name: freight_value
+    type: NUMERIC(12,2)
+    description: Valor do frete para este item.
+    tests: [not_null]

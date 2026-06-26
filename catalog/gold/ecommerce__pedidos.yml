@@ -1,0 +1,98 @@
+name: ecommerce__pedidos
+layer: gold
+domain: ecommerce
+description: >
+  Fato de pedidos entregues. Grão = pedido. Filtro: order_status = 'delivered'.
+  96.478 pedidos. Tabela principal para análises de fulfillment, atraso e satisfação.
+  Consumo direto por ferramentas de BI.
+owner: Novaes
+lineage:
+  sources:
+    - silver.intermediate__pedidos_enriquecidos
+  depends_on:
+    - ref('intermediate__pedidos_enriquecidos')
+  filter: "order_status = 'delivered'"
+
+columns:
+  - name: order_id
+    type: TEXT
+    description: Identificador único do pedido (PK).
+    tests: [unique, not_null]
+
+  - name: customer_id
+    type: TEXT
+    description: FK para silver.olist__customers.
+    tests: [not_null]
+
+  - name: customer_unique_id
+    type: TEXT
+    description: Identificador único do cliente real (agrupa pedidos do mesmo cliente).
+
+  - name: customer_state
+    type: CHAR(2)
+    description: UF do cliente.
+
+  - name: seller_id
+    type: TEXT
+    description: ID do vendedor. NULL para pedidos multi-vendedor (1.278 casos).
+
+  - name: seller_state
+    type: CHAR(2)
+    description: UF do vendedor. NULL para pedidos multi-vendedor.
+
+  - name: multi_vendedor
+    type: BOOLEAN
+    description: True quando o pedido tem itens de mais de um vendedor.
+
+  - name: qtd_itens
+    type: INTEGER
+    description: Quantidade de itens no pedido.
+
+  - name: valor_produtos
+    type: NUMERIC
+    description: Valor total dos produtos (sem frete).
+
+  - name: valor_frete
+    type: NUMERIC
+    description: Valor total do frete.
+
+  - name: review_score
+    type: SMALLINT
+    description: Nota da review (1–5). NULL se o cliente não avaliou.
+
+  - name: purchased_at
+    type: TIMESTAMPTZ
+    description: Timestamp da compra.
+    tests: [not_null]
+
+  - name: customer_delivered_at
+    type: TIMESTAMPTZ
+    description: Timestamp da entrega ao cliente.
+
+  - name: tempo_aprovacao_dias
+    type: NUMERIC
+    description: Dias entre compra e aprovação do pagamento.
+
+  - name: tempo_postagem_dias
+    type: NUMERIC
+    description: Dias entre aprovação e postagem na transportadora.
+
+  - name: tempo_transporte_dias
+    type: NUMERIC
+    description: Dias em trânsito.
+
+  - name: lead_time_total_dias
+    type: NUMERIC
+    description: Dias totais do ciclo (compra → entrega).
+
+  - name: atraso_entrega_dias
+    type: NUMERIC
+    description: Dias de atraso em relação ao prazo estimado. Negativo = adiantado.
+
+  - name: atrasado
+    type: BOOLEAN
+    description: True quando entrega ocorreu após o prazo estimado.
+
+  - name: nota_baixa
+    type: BOOLEAN
+    description: True quando review_score <= 2.

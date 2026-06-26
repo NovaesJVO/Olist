@@ -1,0 +1,56 @@
+name: ecommerce__geografia
+layer: gold
+domain: ecommerce
+description: >
+  Métricas de fulfillment e satisfação por UF do cliente.
+  Grão = estado brasileiro (27 linhas: 26 estados + DF).
+  Filtro: order_status = 'delivered'.
+  Inclui recorte interestadual (seller e cliente em estados diferentes).
+owner: Novaes
+lineage:
+  sources:
+    - silver.intermediate__pedidos_enriquecidos
+  depends_on:
+    - ref('intermediate__pedidos_enriquecidos')
+  filter: "order_status = 'delivered'"
+
+columns:
+  - name: customer_state
+    type: CHAR(2)
+    description: Sigla do estado do cliente (PK).
+    tests: [unique, not_null]
+
+  - name: total_pedidos
+    type: BIGINT
+    description: Total de pedidos entregues para clientes neste estado.
+    tests: [not_null]
+
+  - name: pct_interestadual
+    type: NUMERIC
+    description: >
+      Percentual de pedidos em que seller e cliente estão em estados diferentes.
+      Calculado apenas quando seller_state não é NULL (exclui multi-vendedor).
+
+  - name: lead_time_medio_dias
+    type: NUMERIC
+    description: Média de dias entre compra e entrega para este estado.
+
+  - name: atraso_medio_dias
+    type: NUMERIC
+    description: Média de dias de atraso (positivo = atrasado, negativo = adiantado).
+
+  - name: pct_atrasado
+    type: NUMERIC
+    description: Percentual de pedidos entregues com atraso neste estado (0–100).
+
+  - name: nota_media
+    type: NUMERIC
+    description: Média das notas de review dos clientes deste estado (1–5).
+
+  - name: pct_nota_baixa
+    type: NUMERIC
+    description: Percentual de reviews com nota <= 2 neste estado (0–100).
+
+  - name: receita_total
+    type: NUMERIC
+    description: Soma de (valor_produtos + valor_frete) para pedidos neste estado.

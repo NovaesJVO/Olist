@@ -1,0 +1,47 @@
+name: olist__order_reviews
+layer: silver
+domain: olist
+description: >
+  Avaliações de pedidos feitas pelos clientes. Grão = review.
+  Atenção: review_id NÃO é único no dataset raw (789 duplicatas conhecidas);
+  a deduplicação ocorre no intermediate__pedidos_enriquecidos.
+owner: Novaes
+lineage:
+  sources:
+    - bronze.olist__order_reviews
+  depends_on:
+    - ref('olist__order_reviews')
+
+columns:
+  - name: review_id
+    type: TEXT
+    description: Identificador da review. Não é único no raw (vide nota acima).
+    tests: [not_null]
+
+  - name: order_id
+    type: TEXT
+    description: FK para olist__orders.
+    tests: [not_null]
+
+  - name: review_score
+    type: SMALLINT
+    description: Nota do cliente de 1 (péssimo) a 5 (excelente).
+    tests: [not_null]
+
+  - name: comment_title
+    type: TEXT
+    description: Título opcional do comentário da review.
+
+  - name: comment_message
+    type: TEXT
+    description: Corpo opcional do comentário da review.
+
+  - name: created_at
+    type: TIMESTAMPTZ
+    description: Data em que a pesquisa de satisfação foi enviada ao cliente.
+    tests: [not_null]
+
+  - name: answered_at
+    type: TIMESTAMPTZ
+    description: Data em que o cliente respondeu à pesquisa.
+    tests: [not_null]

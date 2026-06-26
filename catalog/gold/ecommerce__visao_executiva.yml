@@ -1,0 +1,55 @@
+name: ecommerce__visao_executiva
+layer: gold
+domain: ecommerce
+description: >
+  Série temporal mensal do e-commerce. Grão = mês (date_trunc month).
+  23 meses de dados: set/2023 a ago/2025 (período pós-date shift).
+  Filtro: order_status = 'delivered'. Ideal para dashboards executivos de tendência.
+owner: Novaes
+lineage:
+  sources:
+    - silver.intermediate__pedidos_enriquecidos
+  depends_on:
+    - ref('intermediate__pedidos_enriquecidos')
+  filter: "order_status = 'delivered'"
+
+columns:
+  - name: mes
+    type: DATE
+    description: >
+      Primeiro dia do mês de compra (date_trunc('month', purchased_at)).
+      Período: 2023-09-01 a 2025-08-01.
+    tests: [unique, not_null]
+
+  - name: total_pedidos
+    type: BIGINT
+    description: Quantidade de pedidos entregues com compra neste mês.
+    tests: [not_null]
+
+  - name: receita_produtos
+    type: NUMERIC
+    description: Soma dos valores de produtos para pedidos deste mês.
+
+  - name: receita_frete
+    type: NUMERIC
+    description: Soma dos valores de frete para pedidos deste mês.
+
+  - name: ticket_medio
+    type: NUMERIC
+    description: Valor médio de produtos por pedido neste mês.
+
+  - name: lead_time_medio_dias
+    type: NUMERIC
+    description: Média de dias entre compra e entrega para pedidos deste mês.
+
+  - name: pct_atrasado
+    type: NUMERIC
+    description: Percentual de pedidos entregues com atraso neste mês (0–100).
+
+  - name: nota_media
+    type: NUMERIC
+    description: Média das notas de review dos pedidos deste mês (1–5).
+
+  - name: pct_nota_baixa
+    type: NUMERIC
+    description: Percentual de reviews com nota <= 2 neste mês (0–100).

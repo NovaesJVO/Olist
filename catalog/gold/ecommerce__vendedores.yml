@@ -1,0 +1,67 @@
+name: ecommerce__vendedores
+layer: gold
+domain: ecommerce
+description: >
+  Ranking de vendedores com métricas agregadas de performance.
+  Grão = seller_id. 2.948 vendedores.
+  Filtros: order_status = 'delivered' AND multi_vendedor = false
+  (pedidos sem seller atribuível são excluídos).
+owner: Novaes
+lineage:
+  sources:
+    - silver.intermediate__pedidos_enriquecidos
+  depends_on:
+    - ref('intermediate__pedidos_enriquecidos')
+  filter: "order_status = 'delivered' AND multi_vendedor = false"
+
+columns:
+  - name: seller_id
+    type: TEXT
+    description: Identificador único do vendedor (PK).
+    tests: [unique, not_null]
+
+  - name: seller_state
+    type: CHAR(2)
+    description: UF do vendedor.
+
+  - name: total_pedidos
+    type: BIGINT
+    description: Quantidade de pedidos entregues atribuídos a este vendedor.
+    tests: [not_null]
+
+  - name: total_itens
+    type: BIGINT
+    description: Soma de itens vendidos.
+
+  - name: receita_produtos
+    type: NUMERIC
+    description: Soma dos valores de produtos (sem frete).
+    tests: [not_null]
+
+  - name: receita_frete
+    type: NUMERIC
+    description: Soma dos valores de frete.
+
+  - name: ticket_medio
+    type: NUMERIC
+    description: Valor médio por pedido (média de valor_produtos).
+
+  - name: lead_time_medio_dias
+    type: NUMERIC
+    description: Média de dias entre compra e entrega para pedidos deste vendedor.
+
+  - name: pct_atrasado
+    type: NUMERIC
+    description: Percentual de pedidos entregues com atraso (0–100).
+
+  - name: nota_media
+    type: NUMERIC
+    description: Média das notas de review recebidas (1–5).
+
+  - name: pct_nota_baixa
+    type: NUMERIC
+    description: Percentual de reviews com nota <= 2 (0–100).
+
+  - name: ranking_receita
+    type: BIGINT
+    description: Posição no ranking por receita de produtos (1 = maior receita).

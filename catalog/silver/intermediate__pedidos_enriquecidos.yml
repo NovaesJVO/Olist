@@ -1,0 +1,128 @@
+name: intermediate__pedidos_enriquecidos
+layer: silver
+domain: olist
+description: >
+  Model intermediate que consolida pedidos, clientes, itens, vendedores e reviews
+  num único grão de pedido. Calcula 7 métricas de tempo e atraso de entrega.
+  Pedidos com múltiplos vendedores têm seller_id/seller_state nulos e multi_vendedor=true.
+  Reviews deduplicadas: fica a mais recente por pedido.
+owner: Novaes
+lineage:
+  sources:
+    - silver.olist__orders
+    - silver.olist__customers
+    - silver.olist__order_items
+    - silver.olist__sellers
+    - silver.olist__order_reviews
+  depends_on:
+    - ref('olist__orders')
+    - ref('olist__customers')
+    - ref('olist__order_items')
+    - ref('olist__sellers')
+    - ref('olist__order_reviews')
+
+columns:
+  - name: order_id
+    type: TEXT
+    description: Identificador único do pedido (PK).
+    tests: [unique, not_null]
+
+  - name: customer_id
+    type: TEXT
+    description: FK para olist__customers.
+    tests: [not_null]
+
+  - name: customer_unique_id
+    type: TEXT
+    description: Identificador único do cliente real.
+
+  - name: customer_state
+    type: CHAR(2)
+    description: UF do cliente.
+
+  - name: order_status
+    type: TEXT
+    description: Status do pedido.
+    tests: [not_null]
+
+  - name: purchased_at
+    type: TIMESTAMPTZ
+    description: Momento da compra.
+    tests: [not_null]
+
+  - name: approved_at
+    type: TIMESTAMPTZ
+    description: Momento da aprovação do pagamento.
+
+  - name: carrier_delivered_at
+    type: TIMESTAMPTZ
+    description: Momento da postagem na transportadora.
+
+  - name: customer_delivered_at
+    type: TIMESTAMPTZ
+    description: Momento da entrega ao cliente.
+
+  - name: estimated_delivery_at
+    type: TIMESTAMPTZ
+    description: Data estimada de entrega.
+    tests: [not_null]
+
+  - name: seller_id
+    type: TEXT
+    description: ID do vendedor. NULL quando multi_vendedor=true.
+
+  - name: seller_state
+    type: CHAR(2)
+    description: UF do vendedor. NULL quando multi_vendedor=true.
+
+  - name: multi_vendedor
+    type: BOOLEAN
+    description: True quando o pedido tem itens de mais de um vendedor.
+
+  - name: qtd_itens
+    type: INTEGER
+    description: Total de itens no pedido.
+
+  - name: valor_produtos
+    type: NUMERIC
+    description: Soma dos preços dos produtos (sem frete).
+
+  - name: valor_frete
+    type: NUMERIC
+    description: Soma dos fretes do pedido.
+
+  - name: review_score
+    type: SMALLINT
+    description: Nota da review mais recente (1–5). NULL se sem review.
+
+  - name: review_answered_at
+    type: TIMESTAMPTZ
+    description: Data de resposta da review mais recente.
+
+  - name: tempo_aprovacao_dias
+    type: NUMERIC
+    description: Dias entre compra e aprovação do pagamento.
+
+  - name: tempo_postagem_dias
+    type: NUMERIC
+    description: Dias entre aprovação e postagem na transportadora.
+
+  - name: tempo_transporte_dias
+    type: NUMERIC
+    description: Dias em trânsito (transportadora → cliente).
+
+  - name: lead_time_total_dias
+    type: NUMERIC
+    description: Dias totais entre compra e entrega. NULL para pedidos não entregues.
+
+  - name: atraso_entrega_dias
+    type: NUMERIC
+    description: Diferença em dias entre entrega real e estimada. Positivo = atraso.
+
+  - name: atrasado
+    type: BOOLEAN
+    description: True quando customer_delivered_at > estimated_delivery_at.
+
+  - name: nota_baixa
+    type: BOOLEAN
+    description: True quando review_score <= 2.
