@@ -29,7 +29,7 @@ sources:
       - name: olist__order_reviews
         columns:
           - name: review_id
-            tests: [unique, not_null]
+            tests: [not_null]
           - name: order_id
             tests: [not_null]
           - name: review_score

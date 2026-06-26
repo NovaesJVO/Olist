@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: ecommerce__pedidos
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: customer_id
+        tests: [not_null]
+      - name: purchased_at
+        tests: [not_null]
+
+  - name: ecommerce__vendedores
+    columns:
+      - name: seller_id
+        tests: [unique, not_null]
+      - name: total_pedidos
+        tests: [not_null]
+      - name: receita_produtos
+        tests: [not_null]
+
+  - name: ecommerce__geografia
+    columns:
+      - name: customer_state
+        tests: [unique, not_null]
+      - name: total_pedidos
+        tests: [not_null]
+
+  - name: ecommerce__visao_executiva
+    columns:
+      - name: mes
+        tests: [unique, not_null]
+      - name: total_pedidos
+        tests: [not_null]
