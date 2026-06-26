@@ -1,3 +1,15 @@
+# dbt
 dbt-postgres>=1.6
+
+# pipeline (ingestão)
 psycopg[binary]>=3.0
+pandas>=2.0
+
+# dashboard
+streamlit>=1.35
+plotly>=5.20
+sqlalchemy>=2.0
+psycopg2-binary>=2.9
+
+# comum
 python-dotenv>=1.0
