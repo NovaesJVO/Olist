@@ -1,0 +1,13 @@
+sertao_olist:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      user: postgres
+      password: postgres
+      dbname: olist
+      schema: public
+      port: 5432
+      threads: 1
+      keepalives_idle: 0
