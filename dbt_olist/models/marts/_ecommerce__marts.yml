@@ -2,33 +2,184 @@ version: 2
 
 models:
   - name: ecommerce__pedidos
+    description: >
+      Fato de pedidos entregues. Grão = pedido. Filtro: order_status = 'delivered' (96.478 linhas).
+      Tabela principal para análises de fulfillment, atraso e satisfação no BI.
     columns:
       - name: order_id
+        description: Identificador único do pedido (PK).
         tests: [unique, not_null]
+
       - name: customer_id
+        description: FK para silver.olist__customers.customer_id. Identifica o cliente neste pedido.
         tests: [not_null]
+
+      - name: customer_unique_id
+        description: Identificador único do cliente real entre pedidos distintos.
+
+      - name: customer_state
+        description: UF do cliente, 2 caracteres.
+
+      - name: seller_id
+        description: FK para silver.olist__sellers.seller_id. NULL para pedidos com múltiplos vendedores (1.278 casos).
+
+      - name: seller_state
+        description: UF do vendedor, 2 caracteres. NULL para pedidos multi-vendedor.
+
+      - name: multi_vendedor
+        description: True quando o pedido tem itens de mais de um vendedor.
+
+      - name: qtd_itens
+        description: Quantidade de itens no pedido.
+
+      - name: valor_produtos
+        description: Soma dos preços dos produtos do pedido, em R$.
+
+      - name: valor_frete
+        description: Soma dos fretes do pedido, em R$.
+
+      - name: review_score
+        description: Nota da review mais recente (1–5). NULL se o cliente não avaliou.
+
       - name: purchased_at
+        description: Momento da compra.
         tests: [not_null]
+
+      - name: customer_delivered_at
+        description: Momento da entrega ao cliente.
+
+      - name: tempo_aprovacao_dias
+        description: Dias entre compra e aprovação do pagamento.
+
+      - name: tempo_postagem_dias
+        description: Dias entre aprovação e postagem na transportadora.
+
+      - name: tempo_transporte_dias
+        description: Dias em trânsito, da transportadora ao cliente.
+
+      - name: lead_time_total_dias
+        description: Dias totais do ciclo do pedido, da compra à entrega.
+
+      - name: atraso_entrega_dias
+        description: Dias de atraso em relação ao prazo estimado. Positivo = atrasado, negativo = adiantado.
+
+      - name: atrasado
+        description: True quando a entrega ocorreu após o prazo estimado.
+
+      - name: nota_baixa
+        description: True quando review_score <= 2.
 
   - name: ecommerce__vendedores
+    description: >
+      Ranking de vendedores com métricas agregadas de performance. Grão = seller_id.
+      Filtros: order_status = 'delivered' AND multi_vendedor = false. 2.948 sellers.
     columns:
       - name: seller_id
+        description: Identificador único do vendedor (PK).
         tests: [unique, not_null]
+
+      - name: seller_state
+        description: UF do vendedor, 2 caracteres.
+
       - name: total_pedidos
+        description: Quantidade de pedidos entregues atribuídos a este vendedor.
         tests: [not_null]
+
+      - name: total_itens
+        description: Soma de itens vendidos (SUM de qtd_itens).
+
       - name: receita_produtos
+        description: Soma dos valores de produtos, em R$ (SUM de valor_produtos).
         tests: [not_null]
+
+      - name: receita_frete
+        description: Soma dos valores de frete, em R$ (SUM de valor_frete).
+
+      - name: ticket_medio
+        description: Valor médio de produtos por pedido, em R$ (AVG de valor_produtos).
+
+      - name: lead_time_medio_dias
+        description: Média de dias entre compra e entrega para pedidos deste vendedor.
+
+      - name: pct_atrasado
+        description: Percentual de pedidos entregues com atraso, de 0 a 100 (AVG(atrasado) × 100).
+
+      - name: nota_media
+        description: Média das notas de review recebidas, de 1 a 5 (AVG de review_score).
+
+      - name: pct_nota_baixa
+        description: Percentual de reviews com nota <= 2, de 0 a 100 (AVG(nota_baixa) × 100).
+
+      - name: ranking_receita
+        description: Posição no ranking por receita de produtos (1 = maior receita). RANK() OVER (ORDER BY receita_produtos DESC).
 
   - name: ecommerce__geografia
+    description: >
+      Métricas de fulfillment e satisfação por UF do cliente. Grão = estado (27 linhas: 26 estados + DF).
+      Filtro: order_status = 'delivered'. Inclui recorte interestadual.
     columns:
       - name: customer_state
+        description: Sigla do estado do cliente (PK), 2 caracteres.
         tests: [unique, not_null]
+
       - name: total_pedidos
+        description: Total de pedidos entregues para clientes neste estado.
         tests: [not_null]
 
+      - name: pct_interestadual
+        description: >
+          Percentual de pedidos em que seller e cliente estão em estados diferentes, de 0 a 100.
+          Calculado apenas quando seller_state não é NULL (exclui pedidos multi-vendedor).
+
+      - name: lead_time_medio_dias
+        description: Média de dias entre compra e entrega para pedidos neste estado.
+
+      - name: atraso_medio_dias
+        description: Média de dias de atraso (positivo = atrasado, negativo = adiantado).
+
+      - name: pct_atrasado
+        description: Percentual de pedidos entregues com atraso neste estado, de 0 a 100.
+
+      - name: nota_media
+        description: Média das notas de review dos clientes deste estado, de 1 a 5.
+
+      - name: pct_nota_baixa
+        description: Percentual de reviews com nota <= 2 neste estado, de 0 a 100.
+
+      - name: receita_total
+        description: Soma de (valor_produtos + valor_frete) para pedidos neste estado, em R$.
+
   - name: ecommerce__visao_executiva
+    description: >
+      Série temporal mensal do e-commerce. Grão = mês (date_trunc month de purchased_at).
+      23 meses de dados: set/2023 a ago/2025 (período pós-date shift +2556 dias).
+      Filtro: order_status = 'delivered'.
     columns:
       - name: mes
+        description: Primeiro dia do mês de compra, DATE (date_trunc('month', purchased_at)). Período set/2023–ago/2025.
         tests: [unique, not_null]
+
       - name: total_pedidos
+        description: Quantidade de pedidos entregues com compra neste mês.
         tests: [not_null]
+
+      - name: receita_produtos
+        description: Soma dos valores de produtos para pedidos deste mês, em R$.
+
+      - name: receita_frete
+        description: Soma dos valores de frete para pedidos deste mês, em R$.
+
+      - name: ticket_medio
+        description: Valor médio de produtos por pedido neste mês, em R$.
+
+      - name: lead_time_medio_dias
+        description: Média de dias entre compra e entrega para pedidos deste mês.
+
+      - name: pct_atrasado
+        description: Percentual de pedidos entregues com atraso neste mês, de 0 a 100.
+
+      - name: nota_media
+        description: Média das notas de review dos pedidos deste mês, de 1 a 5.
+
+      - name: pct_nota_baixa
+        description: Percentual de reviews com nota <= 2 neste mês, de 0 a 100.

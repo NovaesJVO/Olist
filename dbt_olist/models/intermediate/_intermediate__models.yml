@@ -1,0 +1,100 @@
+version: 2
+
+models:
+  - name: intermediate__pedidos_enriquecidos
+    description: >
+      Consolida pedidos, clientes, itens, vendedores e reviews num único grão de pedido.
+      Calcula 7 métricas de tempo e atraso de fulfillment. Pedidos com múltiplos vendedores
+      têm seller_id/seller_state nulos e multi_vendedor=true. Reviews deduplicadas pela
+      mais recente por pedido (ROW_NUMBER() OVER ORDER BY answered_at DESC).
+    columns:
+      - name: order_id
+        description: Identificador único do pedido (PK).
+        tests: [unique, not_null]
+
+      - name: customer_id
+        description: FK para olist__customers.customer_id. Identifica o cliente neste pedido.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('olist__customers')
+              field: customer_id
+
+      - name: customer_unique_id
+        description: Identificador único do cliente real entre pedidos distintos.
+
+      - name: customer_state
+        description: UF do cliente, 2 caracteres.
+
+      - name: order_status
+        description: Status do pedido (delivered, shipped, canceled, etc.).
+        tests: [not_null]
+
+      - name: purchased_at
+        description: Momento da compra.
+        tests: [not_null]
+
+      - name: approved_at
+        description: Momento da aprovação do pagamento. Nulo para pedidos cancelados antes da aprovação.
+
+      - name: carrier_delivered_at
+        description: Momento da postagem na transportadora. Nulo para pedidos não expedidos.
+
+      - name: customer_delivered_at
+        description: Momento da entrega ao cliente. Nulo para pedidos não entregues.
+
+      - name: estimated_delivery_at
+        description: Data estimada de entrega comunicada ao cliente.
+        tests: [not_null]
+
+      - name: seller_id
+        description: >
+          FK para olist__sellers.seller_id. NULL quando multi_vendedor=true (1.278 pedidos
+          com itens de mais de um vendedor — não é possível atribuir a entrega a um único seller).
+        tests:
+          - relationships:
+              to: ref('olist__sellers')
+              field: seller_id
+              where: "seller_id is not null"
+
+      - name: seller_state
+        description: UF do vendedor, 2 caracteres. NULL quando multi_vendedor=true.
+
+      - name: multi_vendedor
+        description: True quando o pedido tem itens de mais de um vendedor (1.278 casos no dataset).
+
+      - name: qtd_itens
+        description: Total de itens no pedido (COUNT de order_item_id).
+
+      - name: valor_produtos
+        description: Soma dos preços dos produtos do pedido, em R$ (SUM de price).
+
+      - name: valor_frete
+        description: Soma dos fretes do pedido, em R$ (SUM de freight_value).
+
+      - name: review_score
+        description: Nota da review mais recente (1–5). NULL se o cliente não avaliou o pedido.
+
+      - name: review_answered_at
+        description: Data de resposta da review mais recente. NULL se sem review.
+
+      - name: tempo_aprovacao_dias
+        description: Dias entre compra e aprovação do pagamento (approved_at − purchased_at).
+
+      - name: tempo_postagem_dias
+        description: Dias entre aprovação e postagem na transportadora (carrier_delivered_at − approved_at).
+
+      - name: tempo_transporte_dias
+        description: Dias em trânsito, da transportadora ao cliente (customer_delivered_at − carrier_delivered_at).
+
+      - name: lead_time_total_dias
+        description: Dias totais do ciclo do pedido (customer_delivered_at − purchased_at). NULL para pedidos não entregues.
+
+      - name: atraso_entrega_dias
+        description: Diferença em dias entre entrega real e estimada (customer_delivered_at − estimated_delivery_at). Positivo = atrasado, negativo = adiantado.
+
+      - name: atrasado
+        description: True quando customer_delivered_at > estimated_delivery_at.
+
+      - name: nota_baixa
+        description: True quando review_score <= 2 (NPS negativo).
