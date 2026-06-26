@@ -10,5 +10,27 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d olist"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  pipeline:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./archive.zip:/app/archive.zip:ro
+    environment:
+      PG_HOST: postgres
+      PG_USER: postgres
+      PG_PASSWORD: postgres
+      PG_DB: olist
+      PG_PORT: 5432
+    restart: "no"
+
 volumes:
   postgres_data:

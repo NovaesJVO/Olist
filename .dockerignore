@@ -1,0 +1,9 @@
+.venv/
+dados_originais/
+dados_ajustados/
+archive.zip
+__pycache__/
+*.pyc
+.git/
+docs/
+*.zip
