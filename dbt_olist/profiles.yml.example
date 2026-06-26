@@ -8,6 +8,6 @@ sertao_olist:
       password: postgres
       dbname: olist
       schema: public
-      port: 5432
+      port: 5433
       threads: 1
       keepalives_idle: 0

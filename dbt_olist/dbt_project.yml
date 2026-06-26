@@ -10,3 +10,5 @@ test-paths: ['tests']
 models:
   sertao_olist:
     +materialized: view
+    staging:
+      +schema: silver
