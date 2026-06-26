@@ -1,0 +1,33 @@
+name: olist__sellers
+layer: silver
+domain: olist
+description: >
+  Vendedores cadastrados no marketplace Olist. 3.095 sellers únicos.
+  Localização geográfica por CEP e UF.
+owner: Novaes
+lineage:
+  sources:
+    - bronze.olist__sellers
+  depends_on:
+    - ref('olist__sellers')
+
+columns:
+  - name: seller_id
+    type: TEXT
+    description: Identificador único do vendedor.
+    tests: [unique, not_null]
+
+  - name: zip_code_prefix
+    type: TEXT
+    description: Prefixo do CEP do seller (5 dígitos).
+    tests: [not_null]
+
+  - name: city
+    type: TEXT
+    description: Cidade do seller.
+    tests: [not_null]
+
+  - name: state
+    type: CHAR(2)
+    description: Sigla do estado (UF) do seller.
+    tests: [not_null]

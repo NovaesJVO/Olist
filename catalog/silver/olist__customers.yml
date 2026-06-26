@@ -1,0 +1,41 @@
+name: olist__customers
+layer: silver
+domain: olist
+description: >
+  Clientes do marketplace Olist. Grão = customer_id (chave de pedido).
+  Um mesmo cliente físico pode ter múltiplos customer_id; o customer_unique_id
+  identifica o cliente real entre pedidos distintos.
+owner: Novaes
+lineage:
+  sources:
+    - bronze.olist__customers
+  depends_on:
+    - ref('olist__customers')
+
+columns:
+  - name: customer_id
+    type: TEXT
+    description: >
+      Identificador do cliente neste pedido (gerado por pedido).
+      Use customer_unique_id para agrupar o mesmo cliente entre pedidos.
+    tests: [unique, not_null]
+
+  - name: customer_unique_id
+    type: TEXT
+    description: Identificador único do cliente real, consistente entre pedidos.
+    tests: [not_null]
+
+  - name: zip_code_prefix
+    type: TEXT
+    description: Prefixo do CEP do cliente (5 dígitos).
+    tests: [not_null]
+
+  - name: city
+    type: TEXT
+    description: Cidade do cliente (normalizada em minúsculas no dataset original).
+    tests: [not_null]
+
+  - name: state
+    type: CHAR(2)
+    description: Sigla do estado (UF) do cliente.
+    tests: [not_null]

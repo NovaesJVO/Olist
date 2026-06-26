@@ -1,0 +1,53 @@
+name: olist__orders
+layer: silver
+domain: olist
+description: >
+  Cabeçalho dos pedidos Olist. Uma linha por pedido, com status e timestamps
+  de cada etapa do fulfillment (compra, aprovação, postagem, entrega).
+  Timestamps deslocados +2556 dias em relação ao dataset original (SPEC 01B).
+owner: Novaes
+lineage:
+  sources:
+    - bronze.olist__orders
+  depends_on:
+    - ref('olist__orders')
+
+columns:
+  - name: order_id
+    type: TEXT
+    description: Identificador único do pedido.
+    tests: [unique, not_null]
+
+  - name: customer_id
+    type: TEXT
+    description: FK para olist__customers. Identifica o cliente neste pedido (não o cliente único).
+    tests: [not_null]
+
+  - name: order_status
+    type: TEXT
+    description: >
+      Status atual do pedido. Valores: delivered, shipped, canceled,
+      invoiced, processing, approved, created, unavailable.
+    tests: [not_null]
+
+  - name: purchased_at
+    type: TIMESTAMPTZ
+    description: Momento em que o cliente finalizou a compra.
+    tests: [not_null]
+
+  - name: approved_at
+    type: TIMESTAMPTZ
+    description: Momento em que o pagamento foi aprovado. Nulo para pedidos cancelados antes da aprovação.
+
+  - name: carrier_delivered_at
+    type: TIMESTAMPTZ
+    description: Momento em que o seller postou o pedido na transportadora. Nulo para pedidos não expedidos.
+
+  - name: customer_delivered_at
+    type: TIMESTAMPTZ
+    description: Momento em que o cliente recebeu o pedido. Nulo para pedidos não entregues.
+
+  - name: estimated_delivery_at
+    type: TIMESTAMPTZ
+    description: Data estimada de entrega comunicada ao cliente no momento da compra.
+    tests: [not_null]
